@@ -1,13 +1,11 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { Team, AppSettings } from './types';
 import { api } from './utils/helpers';
 import Header from './components/Header';
 import RegistrationModal from './components/RegistrationModal';
 import { AdminPanel } from './components/AdminPanel';
-import ContactModal from './components/ContactModal';
-import AIStudioModal from './components/AIStudioModal';
-import { sendConfirmationEmail } from './services/emailService';
 
 const App: React.FC = () => {
     const [teams, setTeams] = useState<Team[]>([]);
@@ -16,8 +14,6 @@ const App: React.FC = () => {
     
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
     const [isAdminOpen, setIsAdminOpen] = useState(false);
-    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-    const [isAIStudioModalOpen, setIsAIStudioModalOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -74,22 +70,8 @@ const App: React.FC = () => {
             showToast(`Equipa "${newTeam.teamName}" inscrita com sucesso como ${newTeam.status}!`);
         } catch (error) {
             console.error("Failed to save team:", error);
-            if (error instanceof Error && error.message === 'STORAGE_FULL') {
-                showToast("Erro ao guardar: O armazenamento do navegador está cheio.", 'error');
-            } else {
-                showToast("Ocorreu um erro ao guardar a inscrição.", 'error');
-            }
+            showToast("Ocorreu um erro de rede ao guardar a inscrição.", 'error');
         }
-    };
-
-    const handleSendContactMessage = ({ name, title, email }: { name: string; title: string; email: string }) => {
-        setIsContactModalOpen(false);
-        showToast('A sua mensagem foi recebida! Obrigado.', 'success');
-    };
-
-    const handleSendAIRequest = ({ name, title }: { name: string; title: string }) => {
-        setIsAIStudioModalOpen(false);
-        showToast('A sua solicitação foi recebida com sucesso!', 'success');
     };
 
     const handleDeleteTeam = async (id: string) => {
@@ -130,11 +112,7 @@ const App: React.FC = () => {
             }
         } catch (error) {
             console.error("Failed to delete team:", error);
-            if (error instanceof Error && error.message === 'STORAGE_FULL') {
-                showToast("Erro ao eliminar: O armazenamento do navegador está cheio.", 'error');
-            } else {
-                showToast("Ocorreu um erro ao eliminar a inscrição.", 'error');
-            }
+            showToast("Ocorreu um erro de rede ao eliminar a inscrição.", 'error');
         }
     };
 
@@ -146,11 +124,7 @@ const App: React.FC = () => {
                 showToast('Todas as inscrições foram eliminadas.');
             } catch (error) {
                 console.error("Failed to clear all teams:", error);
-                if (error instanceof Error && error.message === 'STORAGE_FULL') {
-                    showToast("Erro ao apagar: O armazenamento do navegador está cheio.", 'error');
-                } else {
-                    showToast("Ocorreu um erro ao apagar as inscrições.", 'error');
-                }
+                showToast("Ocorreu um erro de rede ao apagar as inscrições.", 'error');
             }
         }
     };
@@ -162,11 +136,7 @@ const App: React.FC = () => {
             showToast("Configurações guardadas com sucesso!");
         } catch (error) {
             console.error("Failed to save settings:", error);
-            if (error instanceof Error && error.message === 'STORAGE_FULL') {
-                showToast("Erro: Imagens demasiado grandes. Tente usar ficheiros mais pequenos.", 'error');
-            } else {
-                showToast("Ocorreu um erro ao guardar as configurações.", 'error');
-            }
+            showToast("Ocorreu um erro de rede ao guardar as configurações.", 'error');
         }
     };
     
@@ -259,20 +229,6 @@ const App: React.FC = () => {
                 </div>
 
                 <footer className="text-center text-gray-500 py-6 text-sm">
-                    <div className="mb-4 flex justify-center items-center gap-6">
-                        <button 
-                            onClick={() => setIsContactModalOpen(true)}
-                            className="text-orange-400 hover:text-orange-300 hover:underline"
-                        >
-                            Contactar a Organização
-                        </button>
-                        <button 
-                            onClick={() => setIsAIStudioModalOpen(true)}
-                            className="text-orange-400 hover:text-orange-300 hover:underline"
-                        >
-                            AI Studio
-                        </button>
-                    </div>
                     © {new Date().getFullYear()} Padel Angola — Torneio 50 Anos • Todos os direitos reservados.
                 </footer>
             </div>
@@ -283,18 +239,6 @@ const App: React.FC = () => {
                 onSubmit={handleRegisterTeam}
                 teamLimit={settings.teamLimit}
                 currentTeams={confirmedCount}
-            />
-
-            <ContactModal
-                isOpen={isContactModalOpen}
-                onClose={() => setIsContactModalOpen(false)}
-                onSubmit={handleSendContactMessage}
-            />
-
-            <AIStudioModal
-                isOpen={isAIStudioModalOpen}
-                onClose={() => setIsAIStudioModalOpen(false)}
-                onSubmit={handleSendAIRequest}
             />
 
             <AdminPanel

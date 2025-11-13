@@ -1,5 +1,6 @@
 
 import type { Team, AppSettings } from '../types';
+import { DATABASE_URL } from '../config';
 
 export function exportToCsv(teams: Team[]): void {
   if (teams.length === 0) {
@@ -37,10 +38,13 @@ export function exportToCsv(teams: Team[]): void {
   document.body.removeChild(link);
 }
 
-// --- Mock Backend API Service ---
+// --- Serviço de API com Base de Dados Online ---
 
-const TEAMS_KEY = 'padel_inscricoes_v2_teams';
-const SETTINGS_KEY = 'padel_inscricoes_v2_settings';
+// Este serviço agora comunica com um endpoint de um JSON online.
+// NOTA: Isto usa um padrão simples de ler-modificar-escrever num único ficheiro JSON.
+// Não é adequado para aplicações com muitos acessos simultâneos, pois pode levar a
+// "race conditions" (quando edições simultâneas se sobrepõem). Um backend a sério
+// resolveria este problema.
 
 const defaultSettings: AppSettings = {
   iban: '',
@@ -48,43 +52,75 @@ const defaultSettings: AppSettings = {
   adminEmail: 'niltondesousa55@gmail.com',
 };
 
-const simulateDelay = (ms: number) => new Promise(res => setTimeout(res, ms));
+interface Database {
+  teams: Team[];
+  settings: AppSettings;
+}
+
+// Vai buscar o objeto completo da base de dados ao serviço online.
+async function getDatabase(): Promise<Database> {
+  try {
+    const response = await fetch(DATABASE_URL);
+    if (!response.ok) {
+      throw new Error(`A resposta da rede não foi bem-sucedida: ${response.statusText}`);
+    }
+    const data = await response.json();
+    // Garante que as configurações têm os valores padrão caso estejam em falta
+    data.settings = { ...defaultSettings, ...(data.settings || {}) };
+    data.teams = data.teams || [];
+    return data;
+  } catch (error) {
+    console.error("Falha ao ir buscar os dados da base de dados:", error);
+    // Retorna uma estrutura padrão em caso de falha para evitar que a app crash
+    return {
+      teams: [],
+      settings: defaultSettings,
+    };
+  }
+}
+
+// Guarda o objeto completo da base de dados de volta no serviço online.
+async function saveDatabase(data: Database): Promise<void> {
+  try {
+    const response = await fetch(DATABASE_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error(`A resposta da rede não foi bem-sucedida: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("Falha ao guardar os dados na base de dados:", error);
+    // Lança o erro novamente para que a UI o possa tratar
+    throw error;
+  }
+}
+
 
 export const api = {
   async getTeams(): Promise<Team[]> {
-    await simulateDelay(50);
-    const data = localStorage.getItem(TEAMS_KEY);
-    return data ? JSON.parse(data) : [];
+    const db = await getDatabase();
+    return db.teams;
   },
 
   async saveTeams(teams: Team[]): Promise<void> {
-    await simulateDelay(50);
-    try {
-      localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
-    } catch (error) {
-      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-        throw new Error('STORAGE_FULL');
-      }
-      throw error;
-    }
+    const db = await getDatabase();
+    db.teams = teams;
+    await saveDatabase(db);
   },
 
   async getSettings(): Promise<AppSettings> {
-    await simulateDelay(50);
-    const data = localStorage.getItem(SETTINGS_KEY);
-    // Merge saved settings with defaults to ensure all keys are present
-    return { ...defaultSettings, ...(data ? JSON.parse(data) : {}) };
+    const db = await getDatabase();
+    return db.settings;
   },
 
   async saveSettings(settings: AppSettings): Promise<void> {
-    await simulateDelay(50);
-    try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    } catch (error) {
-      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-        throw new Error('STORAGE_FULL');
-      }
-      throw error;
-    }
+    const db = await getDatabase();
+    db.settings = settings;
+    await saveDatabase(db);
   },
 };
