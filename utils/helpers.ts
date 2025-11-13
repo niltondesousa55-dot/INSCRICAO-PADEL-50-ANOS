@@ -61,7 +61,14 @@ export const api = {
 
   async saveTeams(teams: Team[]): Promise<void> {
     await simulateDelay(50);
-    localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+    try {
+      localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+    } catch (error) {
+      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+        throw new Error('STORAGE_FULL');
+      }
+      throw error;
+    }
   },
 
   async getSettings(): Promise<AppSettings> {
@@ -73,6 +80,13 @@ export const api = {
 
   async saveSettings(settings: AppSettings): Promise<void> {
     await simulateDelay(50);
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch (error) {
+      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+        throw new Error('STORAGE_FULL');
+      }
+      throw error;
+    }
   },
 };

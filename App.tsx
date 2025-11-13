@@ -74,7 +74,11 @@ const App: React.FC = () => {
             showToast(`Equipa "${newTeam.teamName}" inscrita com sucesso como ${newTeam.status}!`);
         } catch (error) {
             console.error("Failed to save team:", error);
-            showToast("Ocorreu um erro ao guardar a inscrição.", 'error');
+            if (error instanceof Error && error.message === 'STORAGE_FULL') {
+                showToast("Erro ao guardar: O armazenamento do navegador está cheio.", 'error');
+            } else {
+                showToast("Ocorreu um erro ao guardar a inscrição.", 'error');
+            }
         }
     };
 
@@ -126,7 +130,11 @@ const App: React.FC = () => {
             }
         } catch (error) {
             console.error("Failed to delete team:", error);
-            showToast("Ocorreu um erro ao eliminar a inscrição.", 'error');
+            if (error instanceof Error && error.message === 'STORAGE_FULL') {
+                showToast("Erro ao eliminar: O armazenamento do navegador está cheio.", 'error');
+            } else {
+                showToast("Ocorreu um erro ao eliminar a inscrição.", 'error');
+            }
         }
     };
 
@@ -138,7 +146,11 @@ const App: React.FC = () => {
                 showToast('Todas as inscrições foram eliminadas.');
             } catch (error) {
                 console.error("Failed to clear all teams:", error);
-                showToast("Ocorreu um erro ao apagar as inscrições.", 'error');
+                if (error instanceof Error && error.message === 'STORAGE_FULL') {
+                    showToast("Erro ao apagar: O armazenamento do navegador está cheio.", 'error');
+                } else {
+                    showToast("Ocorreu um erro ao apagar as inscrições.", 'error');
+                }
             }
         }
     };
@@ -150,7 +162,11 @@ const App: React.FC = () => {
             showToast("Configurações guardadas com sucesso!");
         } catch (error) {
             console.error("Failed to save settings:", error);
-            showToast("Ocorreu um erro ao guardar as configurações.", 'error');
+            if (error instanceof Error && error.message === 'STORAGE_FULL') {
+                showToast("Erro: Imagens demasiado grandes. Tente usar ficheiros mais pequenos.", 'error');
+            } else {
+                showToast("Ocorreu um erro ao guardar as configurações.", 'error');
+            }
         }
     };
     
