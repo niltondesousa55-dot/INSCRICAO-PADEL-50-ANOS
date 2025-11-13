@@ -15,3 +15,11 @@ export interface Team {
 
 export const TShirtSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
 export type TShirtSize = typeof TShirtSizes[number];
+
+export interface AppSettings {
+  iban: string;
+  teamLimit: number;
+  logoUrl: string;
+  bannerUrl: string;
+  adminEmail: string;
+}

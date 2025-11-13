@@ -1,4 +1,5 @@
-import type { Team } from '../types';
+
+import type { Team, AppSettings } from '../types';
 
 export function exportToCsv(teams: Team[]): void {
   if (teams.length === 0) {
@@ -35,3 +36,43 @@ export function exportToCsv(teams: Team[]): void {
   link.click();
   document.body.removeChild(link);
 }
+
+// --- Mock Backend API Service ---
+
+const TEAMS_KEY = 'padel_inscricoes_v2_teams';
+const SETTINGS_KEY = 'padel_inscricoes_v2_settings';
+
+const defaultSettings: AppSettings = {
+  iban: '',
+  teamLimit: 16,
+  logoUrl: 'https://i.imgur.com/mO4Pjgt.png',
+  bannerUrl: 'https://i.imgur.com/2s364y7.png',
+  adminEmail: 'niltondesousa55@gmail.com',
+};
+
+const simulateDelay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+export const api = {
+  async getTeams(): Promise<Team[]> {
+    await simulateDelay(50);
+    const data = localStorage.getItem(TEAMS_KEY);
+    return data ? JSON.parse(data) : [];
+  },
+
+  async saveTeams(teams: Team[]): Promise<void> {
+    await simulateDelay(50);
+    localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+  },
+
+  async getSettings(): Promise<AppSettings> {
+    await simulateDelay(50);
+    const data = localStorage.getItem(SETTINGS_KEY);
+    // Merge saved settings with defaults to ensure all keys are present
+    return { ...defaultSettings, ...(data ? JSON.parse(data) : {}) };
+  },
+
+  async saveSettings(settings: AppSettings): Promise<void> {
+    await simulateDelay(50);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  },
+};

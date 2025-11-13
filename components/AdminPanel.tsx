@@ -1,49 +1,40 @@
+
 import React, { useState, useEffect } from 'react';
-import type { Team } from '../types';
+import type { Team, AppSettings } from '../types';
 import { exportToCsv } from '../utils/helpers';
 
 interface AdminPanelProps {
     isOpen: boolean;
     onClose: () => void;
     teams: Team[];
-    iban: string;
-    onSaveIban: (iban: string) => void;
+    settings: AppSettings;
+    onSaveSettings: (settings: AppSettings) => void;
     onDeleteTeam: (id: string) => void;
     onClearAll: () => void;
-    teamLimit: number;
-    onSaveTeamLimit: (limit: number) => void;
-    logoUrl: string;
-    onSaveLogoUrl: (url: string) => void;
-    bannerUrl: string;
-    onSaveBannerUrl: (url: string) => void;
-    adminEmail: string;
-    onSaveAdminEmail: (email: string) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ 
-    isOpen, onClose, teams, iban, onSaveIban, onDeleteTeam, onClearAll, 
-    teamLimit, onSaveTeamLimit, logoUrl, onSaveLogoUrl, bannerUrl, onSaveBannerUrl,
-    adminEmail, onSaveAdminEmail
+export const AdminPanel: React.FC<AdminPanelProps> = ({ 
+    isOpen, onClose, teams, settings, onSaveSettings, onDeleteTeam, onClearAll
 }) => {
     const [passwordInput, setPasswordInput] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     
-    // State for editable settings
-    const [ibanInput, setIbanInput] = useState(iban);
-    const [teamLimitInput, setTeamLimitInput] = useState(teamLimit);
-    const [logoUrlInput, setLogoUrlInput] = useState(logoUrl);
-    const [bannerUrlInput, setBannerUrlInput] = useState(bannerUrl);
-    const [adminEmailInput, setAdminEmailInput] = useState(adminEmail);
+    // State for editable settings, initialized from props
+    const [ibanInput, setIbanInput] = useState(settings.iban);
+    const [teamLimitInput, setTeamLimitInput] = useState(settings.teamLimit);
+    const [logoUrlInput, setLogoUrlInput] = useState(settings.logoUrl);
+    const [bannerUrlInput, setBannerUrlInput] = useState(settings.bannerUrl);
+    const [adminEmailInput, setAdminEmailInput] = useState(settings.adminEmail);
     
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            // Sync state with props when modal opens
-            setIbanInput(iban);
-            setTeamLimitInput(teamLimit);
-            setLogoUrlInput(logoUrl);
-            setBannerUrlInput(bannerUrl);
-            setAdminEmailInput(adminEmail);
+            // Sync state with props when modal opens or settings change
+            setIbanInput(settings.iban);
+            setTeamLimitInput(settings.teamLimit);
+            setLogoUrlInput(settings.logoUrl);
+            setBannerUrlInput(settings.bannerUrl);
+            setAdminEmailInput(settings.adminEmail);
         } else {
             document.body.style.overflow = 'auto';
             // Reset state on close
@@ -51,7 +42,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             setPasswordInput('');
         }
         return () => { document.body.style.overflow = 'auto' };
-    }, [isOpen, iban, teamLimit, logoUrl, bannerUrl, adminEmail]);
+    }, [isOpen, settings]);
 
     const handleLogin = () => {
         const storedPassword = localStorage.getItem('pa_admin_pass') || 'Angola2001';
@@ -78,12 +69,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     const handleSaveSettings = () => {
-        onSaveIban(ibanInput);
-
         const newLimit = parseInt(String(teamLimitInput), 10);
-        if (!isNaN(newLimit) && newLimit > 0) {
-            onSaveTeamLimit(newLimit);
-        } else {
+        if (isNaN(newLimit) || newLimit <= 0) {
             alert('O limite de equipas deve ser um número válido e positivo.');
             return; 
         }
@@ -95,11 +82,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             return;
         }
 
-        onSaveLogoUrl(logoUrlInput);
-        onSaveBannerUrl(bannerUrlInput);
-        onSaveAdminEmail(finalAdminEmail);
+        const newSettings: AppSettings = {
+            iban: ibanInput,
+            teamLimit: newLimit,
+            logoUrl: logoUrlInput,
+            bannerUrl: bannerUrlInput,
+            adminEmail: finalAdminEmail,
+        };
 
-        alert('Configurações guardadas com sucesso!');
+        onSaveSettings(newSettings);
+        // The parent component will show the confirmation toast
     };
 
     if (!isOpen) return null;
@@ -209,5 +201,3 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
     );
 };
-
-export default AdminPanel;
