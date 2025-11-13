@@ -64,35 +64,44 @@ const App: React.FC = () => {
         if (!window.confirm('Tem a certeza que pretende eliminar esta inscrição?')) {
             return;
         }
-
-        let teamToPromote: Team | undefined;
-
-        setTeams(currentTeams => {
-            const teamToDelete = currentTeams.find(t => t.id === id);
-            if (!teamToDelete) return currentTeams;
-
-            const remainingTeams = currentTeams.filter(t => t.id !== id);
+    
+        const teamToDelete = teams.find(t => t.id === id);
+        if (!teamToDelete) {
+            showToast('Equipa não encontrada.', 'error');
+            return;
+        }
+        
+        // 1. Filter out the team to be deleted
+        let updatedTeams = teams.filter(t => t.id !== id);
+        let promotedTeam: Team | undefined;
+    
+        // 2. If the deleted team was confirmed ('inscrito'), check for promotion
+        if (teamToDelete.status === 'inscrito') {
+            const confirmedCountAfterDeletion = updatedTeams.filter(t => t.status === 'inscrito').length;
             
-            if (teamToDelete.status === 'inscrito') {
-                const confirmedCount = remainingTeams.filter(t => t.status === 'inscrito').length;
-                if (confirmedCount < teamLimit) {
-                    const oldestReserve = remainingTeams
-                        .filter(t => t.status === 'reserva')
-                        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())[0];
-
-                    if (oldestReserve) {
-                        teamToPromote = { ...oldestReserve, status: 'inscrito' };
-                        return remainingTeams.map(t => t.id === oldestReserve.id ? teamToPromote! : t);
-                    }
+            if (confirmedCountAfterDeletion < teamLimit) {
+                // Find the oldest team on the reserve list
+                const oldestReserve = updatedTeams
+                    .filter(t => t.status === 'reserva')
+                    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())[0];
+    
+                if (oldestReserve) {
+                    promotedTeam = { ...oldestReserve, status: 'inscrito' };
+                    // 3. Create the final list by mapping over the updated list
+                    updatedTeams = updatedTeams.map(t => 
+                        t.id === oldestReserve.id ? promotedTeam! : t
+                    );
                 }
             }
-            return remainingTeams;
-        });
-
+        }
+    
+        // 4. Set the final state
+        setTeams(updatedTeams);
+        
+        // 5. Show toasts
         showToast('Inscrição eliminada.');
-
-        if (teamToPromote) {
-             showToast(`Equipa "${teamToPromote.teamName}" promovida a inscrita!`, 'success');
+        if (promotedTeam) {
+            showToast(`Equipa "${promotedTeam.teamName}" promovida a inscrita!`, 'success');
         }
     };
 
