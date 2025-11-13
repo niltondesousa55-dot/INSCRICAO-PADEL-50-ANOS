@@ -1,0 +1,5 @@
+{
+  "name": "Padel Angola 50 Anos - Inscrições",
+  "description": "A registration platform for the Padel Angola 50th Anniversary tournament. It allows teams to sign up, manages a waitlist, and includes an admin panel for event organizers to manage registrations and export data.",
+  "requestFramePermissions": []
+}
