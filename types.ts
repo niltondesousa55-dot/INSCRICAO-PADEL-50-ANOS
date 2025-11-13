@@ -19,7 +19,5 @@ export type TShirtSize = typeof TShirtSizes[number];
 export interface AppSettings {
   iban: string;
   teamLimit: number;
-  logoUrl: string;
-  bannerUrl: string;
   adminEmail: string;
 }

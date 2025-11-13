@@ -45,8 +45,6 @@ const SETTINGS_KEY = 'padel_inscricoes_v2_settings';
 const defaultSettings: AppSettings = {
   iban: '',
   teamLimit: 16,
-  logoUrl: 'https://i.imgur.com/mO4Pjgt.png',
-  bannerUrl: 'https://i.imgur.com/2s364y7.png',
   adminEmail: 'niltondesousa55@gmail.com',
 };
 

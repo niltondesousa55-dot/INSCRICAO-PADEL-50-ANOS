@@ -183,11 +183,9 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-900 text-gray-200">
-            <img src={settings.bannerUrl} alt="Banner do Torneio" className="w-full h-48 md:h-64 object-cover" />
-
-            <div className="container mx-auto p-4 max-w-7xl -mt-16 md:-mt-24">
-                <div className="bg-gray-800 bg-opacity-80 backdrop-blur-md rounded-xl shadow-2xl border border-gray-700">
-                    <Header onAdminClick={() => setIsAdminOpen(true)} logoUrl={settings.logoUrl} />
+            <div className="container mx-auto p-4 max-w-7xl pt-8">
+                <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
+                    <Header onAdminClick={() => setIsAdminOpen(true)} />
 
                     <main className="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2">

@@ -22,8 +22,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     // State for editable settings, initialized from props
     const [ibanInput, setIbanInput] = useState(settings.iban);
     const [teamLimitInput, setTeamLimitInput] = useState(settings.teamLimit);
-    const [logoUrlInput, setLogoUrlInput] = useState(settings.logoUrl);
-    const [bannerUrlInput, setBannerUrlInput] = useState(settings.bannerUrl);
     const [adminEmailInput, setAdminEmailInput] = useState(settings.adminEmail);
     
     useEffect(() => {
@@ -32,8 +30,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             // Sync state with props when modal opens or settings change
             setIbanInput(settings.iban);
             setTeamLimitInput(settings.teamLimit);
-            setLogoUrlInput(settings.logoUrl);
-            setBannerUrlInput(settings.bannerUrl);
             setAdminEmailInput(settings.adminEmail);
         } else {
             document.body.style.overflow = 'auto';
@@ -53,21 +49,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         }
     };
     
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string>>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                alert('A imagem é demasiado grande. O limite é 2MB.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setter(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const handleSaveSettings = () => {
         const newLimit = parseInt(String(teamLimitInput), 10);
         if (isNaN(newLimit) || newLimit <= 0) {
@@ -85,8 +66,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         const newSettings: AppSettings = {
             iban: ibanInput,
             teamLimit: newLimit,
-            logoUrl: logoUrlInput,
-            bannerUrl: bannerUrlInput,
             adminEmail: finalAdminEmail,
         };
 
@@ -135,21 +114,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                         <label className="text-sm font-medium text-gray-300">Limite de Equipas</label>
                                         <input type="number" value={teamLimitInput} onChange={e => setTeamLimitInput(Number(e.target.value))} className="mt-1 w-full bg-slate-700 p-2 rounded-md text-white" placeholder="16" />
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-300">Logo do Cabeçalho</label>
-                                            <input type="file" id="logo-upload" className="hidden" accept="image/*" onChange={e => handleFileChange(e, setLogoUrlInput)} />
-                                            <label htmlFor="logo-upload" className="cursor-pointer mt-1 w-full bg-slate-700 p-2 rounded-md text-white block text-center hover:bg-slate-600">Carregar Imagem</label>
-                                            {logoUrlInput && <img src={logoUrlInput} alt="Preview Logo" className="mt-2 h-12 w-auto p-1 bg-slate-700 rounded"/>}
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-medium text-gray-300">Banner Principal</label>
-                                            <input type="file" id="banner-upload" className="hidden" accept="image/*" onChange={e => handleFileChange(e, setBannerUrlInput)} />
-                                            <label htmlFor="banner-upload" className="cursor-pointer mt-1 w-full bg-slate-700 p-2 rounded-md text-white block text-center hover:bg-slate-600">Carregar Imagem</label>
-                                            {bannerUrlInput && <img src={bannerUrlInput} alt="Preview Banner" className="mt-2 h-12 w-auto object-cover p-1 bg-slate-700 rounded"/>}
-                                        </div>
-                                    </div>
-
                                     <button onClick={handleSaveSettings} className="w-full mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-semibold">Guardar Configurações</button>
                                </div>
                                 <div className="lg:col-span-2 bg-slate-900/50 p-4 rounded-lg">
